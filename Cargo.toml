@@ -1,0 +1,9 @@
+[package]
+name = "headsets-bluez"
+version = "0.1.0"
+authors = [ "ayosec@gmail.com" ]
+edition = "2018"
+
+[dependencies]
+dbus = "0.8.3"
+libpulse-binding = "2.16.0"
