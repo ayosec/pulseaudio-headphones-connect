@@ -25,7 +25,7 @@ fn get_mac_from_args() -> Result<String, Box<dyn Error>> {
             }
         }
 
-        _ => Err("Usage: headsets-bluez MAC")?,
+        _ => Err("Usage: pulseaudio-headphones-connect MAC")?,
     }
 }
 

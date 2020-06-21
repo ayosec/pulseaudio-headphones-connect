@@ -1,9 +1,19 @@
 [package]
-name = "headsets-bluez"
+name = "pulseaudio-headphones-connect"
 version = "0.1.0"
 authors = [ "ayosec@gmail.com" ]
 edition = "2018"
+readme = "README.md"
+
+license = "Apache-2.0"
+description = "Adjust PulseAudio configuration for Bluetooth devices"
 
 [dependencies]
 dbus = "0.8.3"
 libpulse-binding = "2.16.0"
+
+[package.metadata.deb]
+extended-description = """
+This tool detects when a bluetooth is connected, and update PulseAudio
+configure to ensure that it used.
+"""

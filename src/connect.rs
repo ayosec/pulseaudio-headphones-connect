@@ -47,7 +47,7 @@ fn task(rx: mpsc::Receiver<Path<'static>>) {
 fn set_card_profile(path: Path) {
     // Connect to PulseAudio and prepare an Introspector instance
     let mut mainloop = Mainloop::new().expect("Connect to PulseAudio");
-    let mut context = Context::new(&mainloop, "headsets-bluez").unwrap();
+    let mut context = Context::new(&mainloop, "pulseaudio-headphones-connect").unwrap();
 
     context
         .connect(None, pulse::context::flags::NOFLAGS, None)
