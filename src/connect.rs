@@ -1,9 +1,10 @@
-use dbus::blocking::Connection;
 use dbus::strings::Path;
 
 use pulse::callbacks::ListResult;
 use pulse::context::Context;
 use pulse::mainloop::standard::Mainloop;
+
+use chrono::prelude::*;
 
 use std::cell::Cell;
 use std::rc::Rc;
@@ -14,37 +15,25 @@ use std::time::Duration;
 pub fn start() -> mpsc::Sender<Path<'static>> {
     let (tx, rx) = mpsc::channel();
     thread::spawn(move || task(rx));
-    return tx;
+
+    tx
 }
 
 fn task(rx: mpsc::Receiver<Path<'static>>) {
-    let conn = Connection::new_system().expect("DBus connection");
-
     while let Ok(path) = rx.recv() {
-        let proxy = conn.with_proxy("org.bluez", &path, Duration::from_secs(10));
+        println!("[{}]: connected", Local::now());
 
-        loop {
-            match proxy.method_call("org.bluez.Device1", "Connect", ()) {
-                Err(e) => {
-                    if e.message() == Some("In Progress") {
-                        thread::sleep(Duration::from_secs(1));
-                    } else {
-                        eprintln!("Failed to connect to {}: {}", path, e);
-                        break;
-                    }
-                }
-                Ok(()) => {
-                    set_card_profile(path);
-                    break;
-                }
+        for _ in 0..10 {
+            if set_card_profile(&path) {
+                break;
             }
+
+            thread::sleep(Duration::from_millis(250));
         }
     }
-
-    todo!()
 }
 
-fn set_card_profile(path: Path) {
+fn set_card_profile(path: &Path) -> bool {
     // Connect to PulseAudio and prepare an Introspector instance
     let mut mainloop = Mainloop::new().expect("Connect to PulseAudio");
     let mut context = Context::new(&mainloop, "pulseaudio-headphones-connect").unwrap();
@@ -81,6 +70,7 @@ fn set_card_profile(path: Path) {
         Completed,
     }
 
+    let updated = Rc::new(Cell::new(false));
     let state = Rc::new(Cell::new(State::Empty));
 
     let path_str = path.as_cstr().to_string_lossy().to_string();
@@ -104,11 +94,14 @@ fn set_card_profile(path: Path) {
     while mainloop.iterate(true).is_success() {
         if let State::Card(card_index) = state.get() {
             let state = state.clone();
+            let updated = updated.clone();
             state.set(State::SetProfile);
             introspect.set_card_profile_by_index(
                 card_index,
                 "a2dp_sink",
                 Some(Box::new(move |success| {
+                    updated.set(updated.get() || success);
+
                     println!(
                         "set-profile: {}",
                         if success { "success" } else { "failed" }
@@ -123,4 +116,6 @@ fn set_card_profile(path: Path) {
             break;
         }
     }
+
+    updated.get()
 }
