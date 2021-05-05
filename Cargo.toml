@@ -9,6 +9,7 @@ license = "Apache-2.0"
 description = "Adjust PulseAudio configuration for Bluetooth devices"
 
 [dependencies]
+chrono = "0.4.19"
 dbus = "0.8.3"
 libpulse-binding = "2.16.0"
 
