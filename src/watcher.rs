@@ -44,12 +44,9 @@ fn handle(msg: &Message, target_path: &str, queue: &mpsc::Sender<Path>) -> bool 
         _ => return true,
     };
 
-    let (iface, props): (_, Option<DBusProps>) = msg.get2();
+    let (iface, props): (Option<String>, Option<DBusProps>) = msg.get2();
 
-    if iface
-        .unwrap_or(String::new())
-        .starts_with("org.bluez.Device")
-    {
+    if iface.unwrap_or_default().starts_with("org.bluez.Device") {
         let connected = props
             .and_then(|p| p.get("Connected").and_then(|v| v.as_u64()))
             .unwrap_or(0);

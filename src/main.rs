@@ -21,11 +21,11 @@ fn get_mac_from_args() -> Result<String, Box<dyn Error>> {
             if valid_mac(&mac) {
                 Ok(mac)
             } else {
-                Err("Invalid MAC")?
+                return Err("Invalid MAC".into());
             }
         }
 
-        _ => Err("Usage: pulseaudio-headphones-connect MAC")?,
+        _ => return Err("Usage: pulseaudio-headphones-connect MAC".into()),
     }
 }
 
